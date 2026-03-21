@@ -1,0 +1,69 @@
+# Application Configuration
+spring:
+  application:
+    name: bizrok-backend
+  
+  # Database Configuration (SQLite)
+  datasource:
+    url: jdbc:sqlite:./bizrok.db
+    driver-class-name: org.sqlite.JDBC
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLiteDialect
+        format_sql: true
+  
+  # Mail Configuration (for OTP)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+    password: ${MAIL_PASSWORD:your-app-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:your-jwt-secret-key-change-this-in-production}
+  expiration: 86400000  # 24 hours in milliseconds
+
+# Bizrok Configuration
+bizrok:
+  otp:
+    expiry: 300000  # 5 minutes in milliseconds
+    max-attempts: 3
+    length: 6
+  
+  pricing:
+    min-price-percent: 20
+    max-deduction-percent: 80
+  
+  kyc:
+    enabled: true
+    face-match-enabled: true
+    bank-check-enabled: true
+
+# Logging Configuration
+logging:
+  level:
+    com.bizrok: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

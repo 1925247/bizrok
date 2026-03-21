@@ -1,0 +1,255 @@
+# Production Configuration for BizRok Platform
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+  http2:
+    enabled: true
+  connection-timeout: 30000
+  shutdown: graceful
+  tomcat:
+    max-connections: 8192
+    max-threads: 200
+    min-spare-threads: 10
+    accesslog:
+      enabled: true
+      directory: logs
+      prefix: access_log
+      suffix: .log
+      pattern: '%h %l %u %t "%r" %s %b "%{Referer}i" "%{User-Agent}i"'
+
+spring:
+  application:
+    name: bizrok-platform
+  
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bizrok_prod
+    username: ${DB_USERNAME:prod_user}
+    password: ${DB_PASSWORD:prod_password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+  
+  # JPA Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        generate_statistics: false
+        order_inserts: true
+        order_updates: true
+        batch_size: 25
+        jdbc_batch_size: 25
+  
+  # Redis Configuration
+  redis:
+    host: localhost
+    port: 6379
+    password: ${REDIS_PASSWORD:}
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+  
+  # Security Configuration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:https://your-auth-server.com}
+  
+  # File Upload Configuration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+      location: /tmp/uploads
+  
+  # Logging Configuration
+  logging:
+    level:
+      root: INFO
+      com.bizrok: DEBUG
+      org.springframework.security: DEBUG
+      org.springframework.data.redis: WARN
+      org.hibernate.SQL: WARN
+      org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    pattern:
+      console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+      file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file:
+      name: logs/bizrok-platform.log
+      max-size: 100MB
+      max-history: 30
+  
+  # Actuator Configuration
+  actuator:
+    endpoints:
+      web:
+        exposure:
+          include: health,info,metrics,env,beans,loggers
+    endpoint:
+      health:
+        show-details: when_authorized
+        roles: ADMIN
+      loggers:
+        enabled: true
+    management:
+      endpoint:
+        health:
+          probes:
+            enabled: true
+      health:
+        probes:
+          enabled: true
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:your-super-secret-jwt-key-change-this-in-production}
+  expiration: 86400000  # 24 hours
+  refresh-expiration: 604800000  # 7 days
+  issuer: bizrok-platform
+
+# OCR Configuration
+ocr:
+  datapath: /app/resources/tessdata
+  language: eng
+  page-seg-mode: 1
+  ocr-engine-mode: 1
+
+# Face Detection Configuration
+face-detection:
+  cascade-path: /app/resources/haarcascades
+  min-face-size: 100
+  confidence-threshold: 0.5
+
+# Email Configuration
+email:
+  host: smtp.gmail.com
+  port: 587
+  username: ${EMAIL_USERNAME:your-email@gmail.com}
+  password: ${EMAIL_PASSWORD:your-app-password}
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+          required: true
+
+# Monitoring and Metrics
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  health:
+    mail:
+      enabled: true
+    redis:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+      environment: production
+
+# Cache Configuration
+cache:
+  type: redis
+  redis:
+    time-to-live: 600000  # 10 minutes
+    cache-null-values: false
+
+# Performance Tuning
+performance:
+  compression:
+    enabled: true
+    min-response-size: 1024
+  caching:
+    enabled: true
+    time-to-live: 3600  # 1 hour
+  database:
+    connection-pool-size: 20
+    query-timeout: 30
+    max-retries: 3
+
+# Security Headers
+security:
+  headers:
+    content-type-options: true
+    xss-protection: true
+    cache-control: true
+    hsts: true
+    frame-options: SAMEORIGIN
+
+# CORS Configuration
+cors:
+  allowed-origins:
+    - https://your-frontend-domain.com
+    - https://admin.your-domain.com
+  allowed-methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allowed-headers: "*"
+  max-age: 3600
+
+# Rate Limiting
+rate-limiting:
+  enabled: true
+  redis-key-prefix: rate_limit
+  window-size: 60000  # 1 minute
+  requests-per-window: 60
+  login-attempts-per-window: 5
+  login-window-size: 900000  # 15 minutes
+  block-duration: 3600000  # 1 hour
+
+# Audit Logging
+audit:
+  enabled: true
+  log-level: INFO
+  include-user-details: true
+  include-request-details: true
+  retention-days: 90
+
+# KYC Configuration
+kyc:
+  document-types:
+    - AADHAAR
+    - PAN
+    - DRIVING_LICENSE
+  face-detection:
+    min-confidence: 0.7
+    max-attempts: 3
+    timeout: 30000  # 30 seconds
+  ocr:
+    timeout: 10000  # 10 seconds
+    retry-attempts: 2

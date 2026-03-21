@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+target/
+
+# Build outputs
+build/
+dist/
+*.jar
+*.war
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.example
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+
+# Temporary files
+tmp/
+temp/
+
+# Monitoring & Logging configs (can be regenerated)
+monitoring/
+logging/
+nginx/ssl/
+
+# Package locks (will be generated)
+package-lock.json
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
